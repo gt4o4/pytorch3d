@@ -1,0 +1,4 @@
+[build-system]
+# setup.py imports torch during metadata/build, so torch must be present in the build env.
+requires = ["setuptools>=64", "wheel", "torch"]
+build-backend = "setuptools.build_meta"
