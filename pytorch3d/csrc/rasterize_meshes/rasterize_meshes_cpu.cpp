@@ -106,6 +106,8 @@ auto ComputeFaceAreas(const torch::Tensor& face_verts) {
   return face_areas;
 }
 
+namespace {
+
 // Helper function to use with std::find_if to find the index of any
 // values in the top k struct which match a given idx.
 struct IsNeighbor {
@@ -118,7 +120,6 @@ struct IsNeighbor {
   int neighbor_idx;
 };
 
-namespace {
 void RasterizeMeshesNaiveCpu_worker(
     const int start_yi,
     const int end_yi,

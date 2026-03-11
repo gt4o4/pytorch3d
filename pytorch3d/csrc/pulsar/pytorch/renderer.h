@@ -128,8 +128,9 @@ struct Renderer {
     stream << "pulsar::Renderer[";
     // Device info.
     stream << self.device_type;
-    if (self.device_index != -1)
+    if (self.device_index != -1) {
       stream << ", ID " << self.device_index;
+    }
     stream << "]";
     return stream;
   }

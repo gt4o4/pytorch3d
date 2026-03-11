@@ -55,11 +55,9 @@ def laplacian(verts: torch.Tensor, edges: torch.Tensor) -> torch.Tensor:
     # We construct the Laplacian matrix by adding the non diagonal values
     # i.e. L[i, j] = 1 ./ deg(i) if (i, j) is an edge
     deg0 = deg[e0]
-    # pyre-fixme[58]: `/` is not supported for operand types `float` and `Tensor`.
-    deg0 = torch.where(deg0 > 0.0, 1.0 / deg0, deg0)
+    deg0 = torch.where(deg0 > 0.0, torch.reciprocal(deg0), deg0)
     deg1 = deg[e1]
-    # pyre-fixme[58]: `/` is not supported for operand types `float` and `Tensor`.
-    deg1 = torch.where(deg1 > 0.0, 1.0 / deg1, deg1)
+    deg1 = torch.where(deg1 > 0.0, torch.reciprocal(deg1), deg1)
     val = torch.cat([deg0, deg1])
     L = torch.sparse_coo_tensor(idx, val, (V, V), dtype=torch.float32)
 
@@ -137,8 +135,7 @@ def cot_laplacian(
     val = torch.stack([area] * 3, dim=1).view(-1)
     inv_areas.scatter_add_(0, idx, val)
     idx = inv_areas > 0
-    # pyre-fixme[58]: `/` is not supported for operand types `float` and `Tensor`.
-    inv_areas[idx] = 1.0 / inv_areas[idx]
+    inv_areas[idx] = torch.reciprocal(inv_areas[idx])
     inv_areas = inv_areas.view(-1, 1)
 
     return L, inv_areas

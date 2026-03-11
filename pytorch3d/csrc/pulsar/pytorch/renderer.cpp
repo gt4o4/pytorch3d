@@ -860,8 +860,9 @@ std::tuple<torch::Tensor, torch::Tensor> Renderer::forward(
             ? (cudaStream_t) nullptr
 #endif
             : (cudaStream_t) nullptr);
-    if (mode == 1)
+    if (mode == 1) {
       results[batch_i] = results[batch_i].slice(2, 0, 1, 1);
+    }
     forw_infos[batch_i] = from_blob(
         this->renderer_vec[batch_i].forw_info_d,
         {this->renderer_vec[0].cam.film_height,

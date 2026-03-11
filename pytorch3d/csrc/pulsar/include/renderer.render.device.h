@@ -139,8 +139,9 @@ GLOBAL void render(
       coord_y < cam_norm.film_border_top + cam_norm.film_height) {
     // Initialize the result.
     if (mode == 0u) {
-      for (uint c_id = 0; c_id < cam_norm.n_channels; ++c_id)
+      for (uint c_id = 0; c_id < cam_norm.n_channels; ++c_id) {
         result[c_id] = bg_col[c_id];
+      }
     } else {
       result[0] = 0.f;
     }
@@ -190,20 +191,22 @@ GLOBAL void render(
             "render|found intersection with sphere %u.\n",
             sphere_id_l[write_idx]);
       }
-      if (ii.min.x == MAX_USHORT)
+      if (ii.min.x == MAX_USHORT) {
         // This is an invalid sphere (out of image). These spheres have
         // maximum depth. Since we ordered the spheres by earliest possible
         // intersection depth we re certain that there will no other sphere
         // that is relevant after this one.
         loading_done = true;
+      }
     }
     // Reset n_pixels_done.
     n_pixels_done = 0;
     thread_block.sync(); // Make sure n_loaded is updated.
     if (n_loaded > RENDER_BUFFER_LOAD_THRESH) {
       // The load buffer is full enough. Draw.
-      if (thread_block.thread_rank() == 0)
+      if (thread_block.thread_rank() == 0) {
         n_balls_loaded += n_loaded;
+      }
       max_closest_possible_intersection = 0.f;
       // This excludes threads outside of the image boundary. Also, it reduces
       // block artifacts.
@@ -290,8 +293,9 @@ GLOBAL void render(
       uint warp_done = thread_warp.ballot(done);
       int warp_done_bit_cnt = POPC(warp_done);
 #endif //__CUDACC__ && __HIP_PLATFORM_AMD__
-      if (thread_warp.thread_rank() == 0)
+      if (thread_warp.thread_rank() == 0) {
         ATOMICADD_B(&n_pixels_done, warp_done_bit_cnt);
+      }
       // This sync is necessary to keep n_loaded until all threads are done with
       // painting.
       thread_block.sync();
@@ -299,8 +303,9 @@ GLOBAL void render(
     }
     thread_block.sync();
   }
-  if (thread_block.thread_rank() == 0)
+  if (thread_block.thread_rank() == 0) {
     n_balls_loaded += n_loaded;
+  }
   PULSAR_LOG_DEV_PIX(
       PULSAR_LOG_RENDER_PIX,
       "render|loaded %d balls in total.\n",
@@ -386,8 +391,9 @@ GLOBAL void render(
             static_cast<float>(tracker.get_n_hits());
   } else {
     float sm_d_normfac = FRCP(FMAX(sm_d, FEPS));
-    for (uint c_id = 0; c_id < cam_norm.n_channels; ++c_id)
+    for (uint c_id = 0; c_id < cam_norm.n_channels; ++c_id) {
       result[c_id] *= sm_d_normfac;
+    }
     int write_loc = (coord_y - cam_norm.film_border_top) * cam_norm.film_width *
             (3 + 2 * n_track) +
         (coord_x - cam_norm.film_border_left) * (3 + 2 * n_track);

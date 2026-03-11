@@ -179,9 +179,7 @@ def sample_farthest_points_naive(
             # and all the other points. If a point has already been selected
             # it's distance will be 0.0 so it will not be selected again as the max.
             dist = points[n, selected_idx, :] - points[n, : lengths[n], :]
-            # pyre-fixme[58]: `**` is not supported for operand types `Tensor` and
-            #  `int`.
-            dist_to_last_selected = (dist**2).sum(-1)  # (P - i)
+            dist_to_last_selected = torch.square(dist).sum(-1)  # (P - i)
 
             # If closer than currently saved distance to one of the selected
             # points, then updated closest_dists

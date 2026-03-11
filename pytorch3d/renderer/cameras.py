@@ -629,10 +629,8 @@ class FoVPerspectiveCameras(CamerasBase):
         # so the so the z sign is 1.0.
         z_sign = 1.0
 
-        # pyre-fixme[58]: `/` is not supported for operand types `float` and `Tensor`.
-        K[:, 0, 0] = 2.0 * znear / (max_x - min_x)
-        # pyre-fixme[58]: `/` is not supported for operand types `float` and `Tensor`.
-        K[:, 1, 1] = 2.0 * znear / (max_y - min_y)
+        K[:, 0, 0] = torch.div(2.0 * znear, max_x - min_x)
+        K[:, 1, 1] = torch.div(2.0 * znear, max_y - min_y)
         K[:, 0, 2] = (max_x + min_x) / (max_x - min_x)
         K[:, 1, 2] = (max_y + min_y) / (max_y - min_y)
         K[:, 3, 2] = z_sign * ones
@@ -1178,9 +1176,7 @@ class PerspectiveCameras(CamerasBase):
         xy_inv_depth = torch.cat(
             # pyre-fixme[6]: For 1st argument expected `Union[List[Tensor],
             #  tuple[Tensor, ...]]` but got `Tuple[Tensor, float]`.
-            # pyre-fixme[58]: `/` is not supported for operand types `float` and
-            #  `Tensor`.
-            (xy_depth[..., :2], 1.0 / xy_depth[..., 2:3]),
+            (xy_depth[..., :2], torch.reciprocal(xy_depth[..., 2:3])),
             dim=-1,  # type: ignore
         )
         return unprojection_transform.transform_points(xy_inv_depth)

@@ -52,8 +52,7 @@ def quaternion_to_matrix(quaternions: torch.Tensor) -> torch.Tensor:
         Rotation matrices as tensor of shape (..., 3, 3).
     """
     r, i, j, k = torch.unbind(quaternions, -1)
-    # pyre-fixme[58]: `/` is not supported for operand types `float` and `Tensor`.
-    two_s = 2.0 / (quaternions * quaternions).sum(-1)
+    two_s = torch.div(2.0, (quaternions * quaternions).sum(-1))
 
     o = torch.stack(
         (
@@ -95,13 +94,9 @@ def _sqrt_positive_part(x: torch.Tensor) -> torch.Tensor:
     Returns torch.sqrt(torch.max(0, x))
     but with a zero subgradient where x is 0.
     """
-    ret = torch.zeros_like(x)
     positive_mask = x > 0
-    if torch.is_grad_enabled():
-        ret[positive_mask] = torch.sqrt(x[positive_mask])
-    else:
-        ret = torch.where(positive_mask, torch.sqrt(x), ret)
-    return ret
+    safe_x = torch.where(positive_mask, x, 1.0)
+    return torch.where(positive_mask, torch.sqrt(safe_x), 0.0)
 
 
 def matrix_to_quaternion(matrix: torch.Tensor) -> torch.Tensor:
@@ -137,18 +132,18 @@ def matrix_to_quaternion(matrix: torch.Tensor) -> torch.Tensor:
     # we produce the desired quaternion multiplied by each of r, i, j, k
     quat_by_rijk = torch.stack(
         [
-            # pyre-fixme[58]: `**` is not supported for operand types `Tensor` and
-            #  `int`.
-            torch.stack([q_abs[..., 0] ** 2, m21 - m12, m02 - m20, m10 - m01], dim=-1),
-            # pyre-fixme[58]: `**` is not supported for operand types `Tensor` and
-            #  `int`.
-            torch.stack([m21 - m12, q_abs[..., 1] ** 2, m10 + m01, m02 + m20], dim=-1),
-            # pyre-fixme[58]: `**` is not supported for operand types `Tensor` and
-            #  `int`.
-            torch.stack([m02 - m20, m10 + m01, q_abs[..., 2] ** 2, m12 + m21], dim=-1),
-            # pyre-fixme[58]: `**` is not supported for operand types `Tensor` and
-            #  `int`.
-            torch.stack([m10 - m01, m20 + m02, m21 + m12, q_abs[..., 3] ** 2], dim=-1),
+            torch.stack(
+                [torch.square(q_abs[..., 0]), m21 - m12, m02 - m20, m10 - m01], dim=-1
+            ),
+            torch.stack(
+                [m21 - m12, torch.square(q_abs[..., 1]), m10 + m01, m02 + m20], dim=-1
+            ),
+            torch.stack(
+                [m02 - m20, m10 + m01, torch.square(q_abs[..., 2]), m12 + m21], dim=-1
+            ),
+            torch.stack(
+                [m10 - m01, m20 + m02, m21 + m12, torch.square(q_abs[..., 3])], dim=-1
+            ),
         ],
         dim=-2,
     )

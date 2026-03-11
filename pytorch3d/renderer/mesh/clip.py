@@ -434,13 +434,7 @@ def clip_faces(
     # These will then be filled in for each case.
     ###########################################
     F_clipped = (
-        F
-        # pyre-fixme[58]: `+` is not supported for operand types `int` and
-        #  `Union[bool, float, int]`.
-        + faces_delta_cum[-1].item()
-        # pyre-fixme[58]: `+` is not supported for operand types `int` and
-        #  `Union[bool, float, int]`.
-        + faces_delta[-1].item()
+        F + int(faces_delta_cum[-1].item()) + int(faces_delta[-1].item())
     )  # Total number of faces in the new Meshes
     face_verts_clipped = torch.zeros(
         (F_clipped, 3, 3), dtype=face_verts_unclipped.dtype, device=device

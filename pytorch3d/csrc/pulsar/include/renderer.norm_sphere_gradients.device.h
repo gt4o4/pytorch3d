@@ -64,8 +64,9 @@ GLOBAL void norm_sphere_gradients(Renderer renderer, const int num_balls) {
   // The sphere only contributes to the camera gradients if it is
   // large enough in screen space.
   if (renderer.ids_sorted_d[idx] > 0 && ii.max.x >= ii.min.x + 3 &&
-      ii.max.y >= ii.min.y + 3)
+      ii.max.y >= ii.min.y + 3) {
     renderer.ids_sorted_d[idx] = 1;
+  }
   END_PARALLEL_NORET();
 };
 

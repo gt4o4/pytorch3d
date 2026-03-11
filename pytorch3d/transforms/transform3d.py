@@ -623,9 +623,7 @@ class Scale(Transform3d):
         Return the inverse of self._matrix.
         """
         xyz = torch.stack([self._matrix[:, i, i] for i in range(4)], dim=1)
-        # pyre-fixme[58]: `/` is not supported for operand types `float` and `Tensor`.
-        ixyz = 1.0 / xyz
-        # pyre-fixme[6]: For 1st param expected `Tensor` but got `float`.
+        ixyz = torch.reciprocal(xyz)
         imat = torch.diag_embed(ixyz, dim1=1, dim2=2)
         return imat
 
