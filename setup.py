@@ -66,6 +66,15 @@ def get_extensions():
         extension = CUDAExtension
 
         sources += source_cuda
+        # PyTorch 2.10+ no longer adds CUDA_HOME/include to the host
+        # compiler's search path automatically.  Add it explicitly so
+        # that ATen headers that ``#include <cuda_runtime_api.h>`` can
+        # find the CUDA toolkit headers.
+        # (CUDA_HOME is None on ROCm, whose hipcc finds the HIP headers itself.)
+        if CUDA_HOME is not None:
+            cuda_include = os.path.join(CUDA_HOME, "include")
+            if os.path.isdir(cuda_include):
+                include_dirs.append(cuda_include)
         define_macros += [("WITH_CUDA", None)]
         # Thrust is only used for its tuple objects.
         # With CUDA 11.0 we can't use the cudatoolkit's version of cub.
